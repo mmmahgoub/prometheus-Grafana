@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+
+  gitlab:
+    image: gitlab/gitlab-ee:13.9.2-ee.0
+    container_name: gitlab
+    hostname: gitlab.local
+    ports:
+      - "8080:80"
+      - "443:443"
+      - "2222:22"
+    restart: unless-stopped
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  # QRadar does not have a Docker version. Placeholder only.
+  qradar:
+    image: alpine
+    container_name: qradar
+    command: ["echo", "QRadar must be run via IBM Cloud or VM, not Docker."]
+    restart: "no"
+
+volumes:
+  prom_data:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+
