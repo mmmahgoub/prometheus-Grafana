@@ -1,16 +1,19 @@
+---
 global:
-  scrape_interval: 15s # By default, scrape targets every 15 seconds.
-
+  scrape_interval: 15s
 scrape_configs:
-  # Scrape Prometheus itself
-  - job_name: 'prometheus'
+  - job_name: prometheus
     static_configs:
-      - targets: ['localhost:9090']
-
-  # Scrape GitLab
-  - job_name: 'gitlab'
+      - targets:
+          - localhost:9090
+  - job_name: gitlab
     scrape_interval: 15s
-    metrics_path: '/-/metrics'
+    metrics_path: /-/metrics
     static_configs:
-      - targets: ['gitlab-server.com:80']
- 
+      - targets:
+          - gitlab-server.com:80
+  - job_name: jenkins
+    metrics_path: /prometheus
+    static_configs:
+      - targets:
+          - 172.29.0.5:8080
