@@ -7,13 +7,12 @@ services:
     ports:
       - "9090:9090"
     restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ./prometheus.yml
-        target: /etc/prometheus/prometheus.yml
-      - prom_data:/prometheus
+volumes:
+  - type: bind
+    source: /home/mdx/github/prometheus-Grafana/prometheus.yml  # Use the absolute path
+    target: /etc/prometheus/prometheus.yml
 
-  grafana:
+    grafana:
     image: grafana/grafana
     container_name: grafana
     ports:
@@ -25,5 +24,3 @@ services:
     volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
 
-volumes:
-  prom_data:
