@@ -11,9 +11,9 @@ scrape_configs:
     metrics_path: /-/metrics
     static_configs:
       - targets:
-          - gitlab-server.com:80
+          - gitlab:80
   - job_name: jenkins
     metrics_path: /prometheus
     static_configs:
       - targets:
-          - 172.29.0.5:8080
+          - jenkins:8080

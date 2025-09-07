@@ -1,26 +1,51 @@
+version: '3.8'
+
 services:
   prometheus:
-    image: prom/prometheus
-    container_name: prometheus
+    image: 'prom/prometheus'
+    container_name: 'prometheus'
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
-      - "9090:9090"
-    restart: unless-stopped
-volumes:
-  - type: bind
-    source: /home/mdx/github/prometheus-Grafana/prometheus.yml  # Use the absolute path
-    target: /etc/prometheus/prometheus.yml
+      - '9090:9090'
+    restart: 'unless-stopped'
+    volumes:
+      - ./home/dx/Documents/grafana/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom_data:/prometheus
+    networks:
+      - monitor
 
-    grafana:
-    image: grafana/grafana
-    container_name: grafana
+  grafana:
+    image: 'grafana/grafana'
+    container_name: 'grafana'
     ports:
-      - "3000:3000"
-    restart: unless-stopped
+      - '3000:3000'
+    restart: 'unless-stopped'
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
+    networks:
+      - monitor
+
+  jenkins:
+    image: 'jenkins/jenkins'
+    container_name: 'jenkins'
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    restart: 'on-failure'
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - monitor
+
+volumes:
+  prom_data:
+  jenkins_home:
+
+networks:
+  monitor:
+    driver: bridge
 
