@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   prometheus:
@@ -13,7 +13,6 @@ services:
       - /home/mdx/github/prometheus-Grafana/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
     networks:
       - monitor
-
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -27,22 +26,6 @@ services:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
     networks:
       - monitor
-
-  jenkins:
-    image: jenkins/jenkins
-    container_name: jenkins-master
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-    restart: unless-stopped
-    networks:
-      - monitor
-
-volumes:
-  jenkins_home:
-
 networks:
   monitor:
     driver: bridge
