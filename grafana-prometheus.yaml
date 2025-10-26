@@ -1,6 +1,6 @@
-version: '3'
-
 services:
+  # Monitoring Services
+# -------------------------------------------------------------
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -10,7 +10,8 @@ services:
       - "9090:9090"
     restart: unless-stopped
     volumes:
-      - /home/mdx/github/prometheus-Grafana/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      # NOTE: Replaced the absolute path with a relative path for portability
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro
     networks:
       - monitor
   grafana:
@@ -24,40 +25,103 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana # Added volume for persistent data
     networks:
       - monitor
+# -------------------------------------------------------------
+
+  # CI/CD Services
+# -------------------------------------------------------------
   jenkins:
-    image: jenkins/jenkins
+    image: jenkins/jenkins:lts
     container_name: jenkins-master
+    user: root # Run as root to avoid permission issues with volumes
     ports:
       - "8080:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Allows Jenkins to run Docker commands
     restart: unless-stopped
     networks:
       - monitor
-  gitlab:
-    image: gitlab/gitlab-ce:13.9.2-ce.0
-    container_name: gitlab
-    hostname: example.com
+
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
     ports:
-      - "443:443"
-      - "80:80"
-      - "2222:22"
+      - "8081:8081"
     volumes:
-      - ${GITLAB_HOME}/config:/etc/gitlab
-      - ${GITLAB_HOME}/logs:/var/log/gitlab
-      - ${GITLAB_HOME}/data:/var/opt/gitlab
-    environment:
-      GITLAB_ROOT_EMAIL: "root@local"
-      GITLAB_ROOT_PASSWORD: "P@ssw0rd"
-      EXTERNAL_URL: "http://example.com"
+      - nexus_data:/nexus-data
     restart: unless-stopped
     networks:
       - monitor
+    environment: # <-- ADD THIS BLOCK
+      # Enable the native Prometheus endpoint on Nexus
+      - INSTALL4J_ADD_VM_PARAMS=-Dnexus.prometheus.enabled=true
+    # Nexus requires more memory than the default Java limit
+    # The default user is 'admin', password is in /nexus-data/admin.password
+    # Set a memory limit if needed, e.g., 'mem_limit: 2048m'
+  sonarqube:
+    image: sonarqube:lts 
+    container_name: sonarqube
+    ports:
+      - "9000:9000" 
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true # Required for running in Docker
+      - SONARQUBE_JDBC_USERNAME=sonar
+      - SONARQUBE_JDBC_PASSWORD=sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    restart: unless-stopped
+    networks:
+      # SonarQube works better with its own dedicated internal network
+      - sonarnet 
+    depends_on:
+      - sonardb
+  sonardb:
+    image: postgres:13
+    container_name: sonardb
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - sonarnet
+# -------------------------------------------------------------
+
+  # CoreDNS
+# -------------------------------------------------------------
+  dns_server:
+    image: coredns/coredns # A lightweight, flexible DNS server
+    container_name: coredns
+    volumes:
+      # Map the custom Corefile for configuration
+      - ./Corefile:/etc/coredns/Corefile:ro
+    ports:
+      - "53:53/udp"
+    networks:
+      - monitor
+    # Ensure it starts before other services that need it
+    restart: unless-stopped
+# -------------------------------------------------------------
+      
 volumes:
   jenkins_home:
+  grafana_data:
+  nexus_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  postgres_data:
+
 networks:
   monitor:
+    driver: bridge
+  sonarnet: # Dedicated network for SonarQube and its database
     driver: bridge

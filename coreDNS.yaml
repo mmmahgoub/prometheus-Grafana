@@ -1,0 +1,17 @@
+
+
+services:
+  # ... existing services ...
+
+  dns_server:
+    image: coredns/coredns # A lightweight, flexible DNS server
+    container_name: coredns
+    volumes:
+      # Map the custom Corefile for configuration
+      - ./Corefile:/etc/coredns/Corefile:ro
+    ports:
+      - "53:53/udp"
+    networks:
+      - monitor
+    # Ensure it starts before other services that need it
+    restart: unless-stopped
