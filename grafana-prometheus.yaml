@@ -26,6 +26,46 @@ services:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
     networks:
       - monitor
+<<<<<<< HEAD
+=======
+
+  jenkins:
+    image: jenkins/jenkins
+    container_name: jenkins-master
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: unless-stopped
+    networks:
+      - monitor
+
+  gitlab:
+    image: gitlab/gitlab-ce:13.9.2-ce.0
+    container_name: gitlab
+    hostname: example.com
+    ports:
+      - "443:443"
+      - "80:80"
+      - "2222:22"
+    volumes:
+      - ${GITLAB_HOME}/config:/etc/gitlab
+      - ${GITLAB_HOME}/logs:/var/log/gitlab
+      - ${GITLAB_HOME}/data:/var/opt/gitlab
+    environment:
+      GITLAB_ROOT_EMAIL: "root@local"
+      GITLAB_ROOT_PASSWORD: "P@ssw0rd"
+      EXTERNAL_URL: "http://example.com"
+    restart: unless-stopped
+    networks:
+      - monitor
+ 
+
+volumes:
+  jenkins_home:
+
+>>>>>>> 72501849a5475a2444466db6c607c6e939980c02
 networks:
   monitor:
     driver: bridge
