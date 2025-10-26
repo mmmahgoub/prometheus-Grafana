@@ -26,9 +26,6 @@ services:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
     networks:
       - monitor
-<<<<<<< HEAD
-=======
-
   jenkins:
     image: jenkins/jenkins
     container_name: jenkins-master
@@ -40,7 +37,6 @@ services:
     restart: unless-stopped
     networks:
       - monitor
-
   gitlab:
     image: gitlab/gitlab-ce:13.9.2-ce.0
     container_name: gitlab
@@ -60,12 +56,8 @@ services:
     restart: unless-stopped
     networks:
       - monitor
- 
-
 volumes:
   jenkins_home:
-
->>>>>>> 72501849a5475a2444466db6c607c6e939980c02
 networks:
   monitor:
     driver: bridge
