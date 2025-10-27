@@ -1,20 +1,22 @@
 .:53 {
     # Custom internal zone resolution using the hosts plugin
     hosts {
-        # Format: <IP_ADDRESS> <DOMAIN_NAME>
+        # Format: <172.20.0.3> <mdx.local>
         
         # New Record 1: Custom record for Jenkins (pointing to the Jenkins service name/IP)
-        172.20.0.10     ci.local        # Assuming 172.20.0.10 is the static IP of your Jenkins container
-        
-        # New Record 2: Custom domain for GitLab
-        172.20.0.20     gitlab.devops   # Assuming 172.20.0.20 is the static IP of your GitLab container
+        172.20.0.6      prometheus.mdx.local
+        172.20.0.2      nexus.mdx.local
+        172.20.0.7      sonarqube.mdx.local
+        172.20.0.5      grafana.mdx.local
+        172.20.0.8      gitlab.mdx.local
+        #gitlab.devops   # Assuming 172.20.0.20 is the static IP of your GitLab container
         
         # Fallthrough tells CoreDNS to check the next plugin if the record isn't found here.
         fallthrough
     }
     
     # Forward all other queries upstream (e.g., to public DNS)
-    forward . 8.8.8.8 8.8.4.4
+    forward . 192.168.1.1 8.8.8.8 8.8.4.4
     log
     errors
     health

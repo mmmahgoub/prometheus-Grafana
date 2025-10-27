@@ -13,7 +13,7 @@ scrape_configs:
   - job_name: 'gitlab'
     metrics_path: '/-/metrics'
     static_configs:
-      - targets: ['172.20.0.6:80'] # Changed to use service name for robustness
+      - targets: ['gitlab:80'] # Changed to use service name for robustness
 
   # 3. Jenkins (CI/CD Master)
   - job_name: 'jenkins'
@@ -25,7 +25,7 @@ scrape_configs:
   # 4. Nexus Repository Manager 3
   - job_name: 'nexus3'
     static_configs:
-      - targets: ['172.20.0.3:8081']
+      - targets: ['nexus:8081']
     metrics_path: '/service/metrics/prometheus'
     # IMPORTANT: Replace the placeholder password below.
     basic_auth:
@@ -35,7 +35,7 @@ scrape_configs:
   # 5. SonarQube (System Metrics)
   - job_name: 'sonarqube'
     static_configs:
-      - targets: ['172.20.0.7:9000']
+      - targets: ['sonarqube:9000']
     metrics_path: '/api/monitoring/metrics'
     # IMPORTANT: Replace the placeholder password below.
     basic_auth:
